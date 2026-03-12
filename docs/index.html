@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Life Of Research — 14-Agent AI Research Lab by Pranay Mahendrakar</title>
+  <meta name="description" content="Generate publication-quality research papers autonomously using a 14-agent AI pipeline with iterative peer review, debate mode, and journal-quality evaluation.">
+  <meta property="og:title" content="Life Of Research — Autonomous AI Research Lab">
+  <meta property="og:description" content="14-Agent pipeline generating full academic papers with GPT-4o">
+  <meta property="og:type" content="website">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --amber: #f59e0b;
+      --blue: #60a5fa;
+      --purple: #e879f9;
+      --green: #34d399;
+      --red: #f87171;
+      --orange: #fb923c;
+      --teal: #38bdf8;
+      --violet: #a78bfa;
+      --bg: #05050d;
+      --bg2: #08081a;
+      --bg3: #0c0c22;
+      --border: #1a1a38;
+      --text: #c0cce0;
+      --text-dim: #6a7a9a;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      overflow-x: hidden;
+    }
+
+    /* ── CANVAS BACKGROUND ── */
+    #bg-canvas {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .content { position: relative; z-index: 1; }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: 64px;
+      background: rgba(5,5,13,0.95);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      padding: 0 40px;
+      z-index: 100;
+    }
+
+    .nav-logo {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 20px;
+      font-weight: 800;
+      color: #fff;
+      text-decoration: none;
+    }
+
+    .nav-logo span { color: var(--amber); }
+
+    .nav-links {
+      display: flex;
+      gap: 32px;
+      margin-left: auto;
+      list-style: none;
+    }
+
+    .nav-links a {
+      color: var(--text-dim);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover { color: var(--amber); }
+
+    /* ── HERO ── */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 100px 20px 60px;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(245,158,11,0.1);
+      border: 1px solid rgba(245,158,11,0.3);
+      border-radius: 100px;
+      padding: 6px 16px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--amber);
+      margin-bottom: 32px;
+      letter-spacing: 2px;
+    }
+
+    .hero-title {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: clamp(48px, 8vw, 96px);
+      font-weight: 800;
+      line-height: 1.0;
+      letter-spacing: -2px;
+      margin-bottom: 16px;
+    }
+
+    .hero-title .accent { color: var(--amber); }
+    .hero-title .dim { color: var(--text-dim); }
+
+    .hero-subtitle {
+      font-size: clamp(16px, 2.5vw, 22px);
+      color: var(--text-dim);
+      max-width: 700px;
+      margin: 0 auto 48px;
+      line-height: 1.6;
+    }
+
+    .hero-subtitle strong { color: var(--blue); }
+
+    .hero-buttons {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 64px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 28px;
+      border-radius: 10px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 14px;
+      font-weight: 600;
+      text-decoration: none;
+      letter-spacing: 1px;
+      transition: all 0.2s;
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #c05000, var(--amber));
+      color: #000;
+      border: none;
+    }
+
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(245,158,11,0.4); }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover { border-color: var(--amber); color: var(--amber); }
+
+    /* ── STATS ── */
+    .stats {
+      display: flex;
+      gap: 48px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .stat {
+      text-align: center;
+    }
+
+    .stat-num {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 36px;
+      font-weight: 800;
+      color: var(--amber);
+      display: block;
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: var(--text-dim);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    /* ── PIPELINE VIZ ── */
+    .section {
+      padding: 100px 40px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .section-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--amber);
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+
+    .section-title {
+      font-size: clamp(28px, 4vw, 48px);
+      font-weight: 700;
+      margin-bottom: 16px;
+      line-height: 1.2;
+    }
+
+    .section-desc {
+      font-size: 16px;
+      color: var(--text-dim);
+      max-width: 600px;
+      line-height: 1.7;
+      margin-bottom: 64px;
+    }
+
+    /* ── AGENT CARDS ── */
+    .agents-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 16px;
+    }
+
+    .agent-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      transition: all 0.3s;
+      cursor: default;
+    }
+
+    .agent-card:hover {
+      transform: translateY(-4px);
+      border-color: var(--card-color);
+      box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+    }
+
+    .agent-icon {
+      font-size: 28px;
+      margin-bottom: 12px;
+      display: block;
+    }
+
+    .agent-name {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .agent-role {
+      font-size: 11px;
+      color: var(--text-dim);
+      letter-spacing: 1px;
+    }
+
+    /* ── FEATURES ── */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 24px;
+    }
+
+    .feature-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px;
+      transition: all 0.3s;
+    }
+
+    .feature-card:hover {
+      border-color: rgba(245,158,11,0.3);
+      background: var(--bg3);
+    }
+
+    .feature-icon {
+      font-size: 32px;
+      margin-bottom: 16px;
+      display: block;
+    }
+
+    .feature-title {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 15px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: #fff;
+    }
+
+    .feature-desc {
+      font-size: 14px;
+      color: var(--text-dim);
+      line-height: 1.6;
+    }
+
+    /* ── CODE BLOCK ── */
+    .code-block {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px 28px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 14px;
+      line-height: 1.8;
+      overflow-x: auto;
+    }
+
+    .code-block .comment { color: #3a3a6a; }
+    .code-block .cmd { color: var(--green); }
+    .code-block .arg { color: var(--amber); }
+
+    /* ── PIPELINE FLOW ── */
+    .pipeline-flow {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      max-width: 700px;
+    }
+
+    .flow-step {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 16px 20px;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      margin-bottom: 4px;
+      transition: all 0.3s;
+    }
+
+    .flow-step:hover {
+      border-color: var(--step-color);
+      transform: translateX(8px);
+    }
+
+    .flow-arrow {
+      text-align: center;
+      color: var(--border);
+      font-size: 20px;
+      margin: 2px 0 2px 24px;
+    }
+
+    .flow-icon { font-size: 22px; width: 32px; }
+    .flow-name { font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 600; }
+    .flow-desc { font-size: 12px; color: var(--text-dim); margin-top: 2px; }
+
+    /* ── INSTALL SECTION ── */
+    .install-steps {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+    }
+
+    .install-step {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+    }
+
+    .step-num {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 36px;
+      font-weight: 800;
+      color: var(--amber);
+      opacity: 0.3;
+      line-height: 1;
+      margin-bottom: 12px;
+    }
+
+    .step-title {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: #fff;
+    }
+
+    .step-desc { font-size: 13px; color: var(--text-dim); line-height: 1.6; }
+    .step-code {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 8px 12px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--green);
+      margin-top: 12px;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 48px 40px;
+      text-align: center;
+    }
+
+    .footer-logo {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 24px;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+
+    .footer-logo span { color: var(--amber); }
+
+    .footer-text {
+      font-size: 14px;
+      color: var(--text-dim);
+      margin-bottom: 24px;
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 24px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .footer-links a {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--text-dim);
+      text-decoration: none;
+      letter-spacing: 1px;
+    }
+
+    .footer-links a:hover { color: var(--amber); }
+
+    /* ── GLOW DIVIDER ── */
+    .glow-divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--amber), transparent);
+      opacity: 0.2;
+      margin: 0;
+    }
+
+    /* ── SCORE DEMO ── */
+    .score-demo {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-top: 32px;
+    }
+
+    .score-pill {
+      padding: 8px 20px;
+      border-radius: 100px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      font-weight: 700;
+      border: 1px solid;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      nav { padding: 0 20px; }
+      .nav-links { display: none; }
+      .section { padding: 60px 20px; }
+      .stats { gap: 24px; }
+      footer { padding: 32px 20px; }
+    }
+  </style>
+</head>
+<body>
+
+<canvas id="bg-canvas"></canvas>
+
+<div class="content">
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">◈ LIFE OF <span>RESEARCH</span></a>
+  <ul class="nav-links">
+    <li><a href="#features">Features</a></li>
+    <li><a href="#pipeline">Pipeline</a></li>
+    <li><a href="#install">Install</a></li>
+    <li><a href="https://github.com/PranayMahendrakar/life-of-research" target="_blank">GitHub ↗</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div>
+    <div class="hero-badge">◈ PRODUCTION RELEASE v5.0</div>
+    <h1 class="hero-title">
+      LIFE OF<br>
+      <span class="accent">RESEARCH</span>
+    </h1>
+    <p class="hero-subtitle">
+      A <strong>14-Agent Autonomous AI Research Lab</strong> that generates full academic papers
+      using GPT-4o with iterative peer review, debate mode, humanization engine,
+      and journal-quality evaluation.
+    </p>
+    <div class="hero-buttons">
+      <a href="#install" class="btn btn-primary">▶ GET STARTED</a>
+      <a href="https://github.com/PranayMahendrakar/life-of-research" target="_blank" class="btn btn-secondary">⭐ GitHub</a>
+    </div>
+    <div class="stats">
+      <div class="stat"><span class="stat-num">14</span><span class="stat-label">AI Agents</span></div>
+      <div class="stat"><span class="stat-num">5</span><span class="stat-label">Citation Styles</span></div>
+      <div class="stat"><span class="stat-num">4</span><span class="stat-label">Export Formats</span></div>
+      <div class="stat"><span class="stat-num">10</span><span class="stat-label">Max Score</span></div>
+    </div>
+  </div>
+</section>
+
+<div class="glow-divider"></div>
+
+<!-- FEATURES -->
+<section class="section" id="features">
+  <p class="section-label">◈ CAPABILITIES</p>
+  <h2 class="section-title">Everything you need to<br>automate research</h2>
+  <p class="section-desc">From topic to publication-ready paper in minutes.</p>
+
+  <div class="features-grid">
+    <div class="feature-card">
+      <span class="feature-icon">🔬</span>
+      <div class="feature-title">14-Agent Pipeline</div>
+      <div class="feature-desc">Specialized agents for every research task: directing, literature analysis, hypothesis generation, writing, reviewing, and more.</div>
+    </div>
+    <div class="feature-card">
+      <span class="feature-icon">⟳</span>
+      <div class="feature-title">Iterative Improvement</div>
+      <div class="feature-desc">Automatically loops through write → review → defend → correct cycles until your target quality score is achieved.</div>
+    </div>
+    <div class="feature-card">
+      <span class="feature-icon">⚔</span>
+      <div class="feature-title">Debate Mode</div>
+      <div class="feature-desc">The Argument Defender agent rebuts reviewer criticisms, simulating a real conference rebuttal process.</div>
+    </div>
+    <div class="feature-card">
+      <span class="feature-icon">🧬</span>
+      <div class="feature-title">Humanization Engine</div>
+      <div class="feature-desc">Removes AI writing patterns and adds authentic researcher voice with hedging, first-person narrative, and natural transitions.</div>
+    </div>
+    <div class="feature-card">
+      <span class="feature-icon">📊</span>
+      <div class="feature-title">Live Score Visualization</div>
+      <div class="feature-desc">Real-time animated score rings, progression graphs, and achievement banners as your paper quality improves.</div>
+    </div>
+    <div class="feature-card">
+      <span class="feature-icon">⬇</span>
+      <div class="feature-title">Multi-format Export</div>
+      <div class="feature-desc">Export as Word Document (.docx), Markdown, HTML, or Plain Text with all sections, reviews, and evaluation included.</div>
+    </div>
+    <div class="feature-card">
+      <span class="feature-icon">📚</span>
+      <div class="feature-title">5 Citation Styles</div>
+      <div class="feature-desc">IEEE, APA, ACM, Springer, and NeurIPS citation formats supported across all paper types.</div>
+    </div>
+    <div class="feature-card">
+      <span class="feature-icon">🕸</span>
+      <div class="feature-title">Knowledge Graph</div>
+      <div class="feature-desc">Visual animated knowledge graph showing topic relationships and key concepts identified by the AI pipeline.</div>
+    </div>
+    <div class="feature-card">
+      <span class="feature-icon">🧠</span>
+      <div class="feature-title">Agent Memory</div>
+      <div class="feature-desc">Persistent memory browser showing what each agent has produced, with rendered markdown and raw text views.</div>
+    </div>
+  </div>
+</section>
+
+<div class="glow-divider"></div>
+
+<!-- PIPELINE -->
+<section class="section" id="pipeline">
+  <p class="section-label">◈ THE PIPELINE</p>
+  <h2 class="section-title">14 agents working together</h2>
+  <p class="section-desc">Each agent is specialized and passes context to the next in a carefully orchestrated sequence.</p>
+
+  <div class="pipeline-flow">
+    <div class="flow-step" style="--step-color: #f59e0b; border-left: 3px solid #f59e0b;">
+      <span class="flow-icon">◈</span>
+      <div><div class="flow-name" style="color:#f59e0b;">Research Director</div><div class="flow-desc">Creates research plan, outline, and keywords</div></div>
+    </div>
+    <div class="flow-arrow">↓</div>
+    <div class="flow-step" style="--step-color: #38bdf8; border-left: 3px solid #38bdf8;">
+      <span class="flow-icon">📚</span>
+      <div><div class="flow-name" style="color:#38bdf8;">Literature Intelligence</div><div class="flow-desc">Generates literature analysis and citations</div></div>
+    </div>
+    <div class="flow-arrow">↓</div>
+    <div class="flow-step" style="--step-color: #fbbf24; border-left: 3px solid #fbbf24;">
+      <span class="flow-icon">💡</span>
+      <div><div class="flow-name" style="color:#fbbf24;">Hypothesis Generator</div><div class="flow-desc">Creates testable hypotheses and experiment designs</div></div>
+    </div>
+    <div class="flow-arrow">↓ LOOP START</div>
+    <div class="flow-step" style="--step-color: #60a5fa; border-left: 3px solid #60a5fa;">
+      <span class="flow-icon">✍</span>
+      <div><div class="flow-name" style="color:#60a5fa;">Academic Writer</div><div class="flow-desc">Writes complete 2500+ word research paper</div></div>
+    </div>
+    <div class="flow-arrow">↓</div>
+    <div class="flow-step" style="--step-color: #f87171; border-left: 3px solid #f87171;">
+      <span class="flow-icon">⚗</span>
+      <div><div class="flow-name" style="color:#f87171;">Methods Reviewer</div><div class="flow-desc">Reviews methodology, algorithms, experimental validity</div></div>
+    </div>
+    <div class="flow-arrow">↓</div>
+    <div class="flow-step" style="--step-color: #c084fc; border-left: 3px solid #c084fc;">
+      <span class="flow-icon">🔭</span>
+      <div><div class="flow-name" style="color:#c084fc;">Novelty Reviewer</div><div class="flow-desc">Assesses originality and contribution</div></div>
+    </div>
+    <div class="flow-arrow">↓</div>
+    <div class="flow-step" style="--step-color: #fb923c; border-left: 3px solid #fb923c;">
+      <span class="flow-icon">⚡</span>
+      <div><div class="flow-name" style="color:#fb923c;">Harsh Reviewer</div><div class="flow-desc">NeurIPS/ICML-style brutal critique</div></div>
+    </div>
+    <div class="flow-arrow">↓</div>
+    <div class="flow-step" style="--step-color: #34d399; border-left: 3px solid #34d399;">
+      <span class="flow-icon">🛡</span>
+      <div><div class="flow-name" style="color:#34d399;">Argument Defender</div><div class="flow-desc">Author rebuttal — defends or concedes points</div></div>
+    </div>
+    <div class="flow-arrow">↓</div>
+    <div class="flow-step" style="--step-color: #4ade80; border-left: 3px solid #4ade80;">
+      <span class="flow-icon">⚙</span>
+      <div><div class="flow-name" style="color:#4ade80;">Correction Engine</div><div class="flow-desc">Applies all conceded fixes to produce revised paper</div></div>
+    </div>
+    <div class="flow-arrow">↓</div>
+    <div class="flow-step" style="--step-color: #a78bfa; border-left: 3px solid #a78bfa;">
+      <span class="flow-icon">🧬</span>
+      <div><div class="flow-name" style="color:#a78bfa;">Humanization Engine</div><div class="flow-desc">Transforms AI text to natural researcher writing</div></div>
+    </div>
+    <div class="flow-arrow">↓</div>
+    <div class="flow-step" style="--step-color: #e879f9; border-left: 3px solid #e879f9;">
+      <span class="flow-icon">★</span>
+      <div><div class="flow-name" style="color:#e879f9;">Journal Evaluator</div><div class="flow-desc">Scores paper on 6 dimensions (0-10)</div></div>
+    </div>
+    <div class="flow-arrow">↓ LOOP AGAIN if score &lt; target</div>
+  </div>
+
+  <div class="score-demo">
+    <span class="score-pill" style="color:#f59e0b;border-color:#f59e0b40;background:rgba(245,158,11,0.05);">🌟 7.0+ GOOD PAPER</span>
+    <span class="score-pill" style="color:#22c55e;border-color:#22c55e40;background:rgba(34,197,94,0.05);">🏆 8.0+ PUBLISHABLE</span>
+    <span class="score-pill" style="color:#60a5fa;border-color:#60a5fa40;background:rgba(96,165,250,0.05);">🚀 8.5+ CONFERENCE READY</span>
+    <span class="score-pill" style="color:#e879f9;border-color:#e879f940;background:rgba(232,121,249,0.05);">💎 9.0+ OUTSTANDING</span>
+  </div>
+</section>
+
+<div class="glow-divider"></div>
+
+<!-- INSTALL -->
+<section class="section" id="install">
+  <p class="section-label">◈ INSTALLATION</p>
+  <h2 class="section-title">Get running in 3 steps</h2>
+  <p class="section-desc">Requires Python 3.9+ and an OpenAI API key.</p>
+
+  <div class="install-steps">
+    <div class="install-step">
+      <div class="step-num">01</div>
+      <div class="step-title">Clone Repository</div>
+      <div class="step-desc">Get the source code from GitHub</div>
+      <div class="step-code">git clone https://github.com/PranayMahendrakar/life-of-research.git</div>
+    </div>
+    <div class="install-step">
+      <div class="step-num">02</div>
+      <div class="step-title">Install Dependencies</div>
+      <div class="step-desc">Install PySide6, requests, and python-docx</div>
+      <div class="step-code">pip install -r requirements.txt</div>
+    </div>
+    <div class="install-step">
+      <div class="step-num">03</div>
+      <div class="step-title">Run the Application</div>
+      <div class="step-desc">Launch the GUI, enter your API key and topic</div>
+      <div class="step-code">python life_of_research_app.py</div>
+    </div>
+  </div>
+
+  <br><br>
+  <div class="code-block">
+    <span class="comment"># Dependencies (requirements.txt)</span><br>
+    <span class="arg">PySide6</span><span style="color:#555">>=</span><span class="cmd">6.5.0</span>         <span class="comment"># Qt6 GUI Framework</span><br>
+    <span class="arg">requests</span><span style="color:#555">>=</span><span class="cmd">2.31.0</span>       <span class="comment"># OpenAI API streaming</span><br>
+    <span class="arg">python-docx</span><span style="color:#555">>=</span><span class="cmd">1.1.0</span>     <span class="comment"># Word document export</span>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">◈ LIFE OF <span>RESEARCH</span></div>
+  <div class="footer-text">By Pranay M Mahendrakar · MIT License · v5.0</div>
+  <div class="footer-links">
+    <a href="https://github.com/PranayMahendrakar/life-of-research" target="_blank">GitHub</a>
+    <a href="https://sonytech.in/pranay" target="_blank">Portfolio</a>
+    <a href="https://orcid.org/0009-0003-7224-029X" target="_blank">ORCID</a>
+    <a href="https://github.com/PranayMahendrakar/life-of-research/issues" target="_blank">Issues</a>
+    <a href="https://github.com/PranayMahendrakar/life-of-research/blob/main/LICENSE" target="_blank">License</a>
+  </div>
+</footer>
+
+</div>
+
+<script>
+// ── ANIMATED PARTICLE BACKGROUND ──
+const canvas = document.getElementById('bg-canvas');
+const ctx = canvas.getContext('2d');
+let particles = [];
+let W, H;
+
+function resize() {
+  W = canvas.width = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener('resize', resize);
+
+const COLORS = ['#f59e0b','#60a5fa','#e879f9','#34d399','#a78bfa','#38bdf8'];
+
+class Particle {
+  constructor() { this.reset(); }
+  reset() {
+    this.x = Math.random() * W;
+    this.y = Math.random() * H;
+    this.vx = (Math.random() - 0.5) * 0.3;
+    this.vy = -Math.random() * 0.4 - 0.1;
+    this.r = Math.random() * 2 + 0.5;
+    this.alpha = Math.random() * 0.4 + 0.05;
+    this.color = COLORS[Math.floor(Math.random() * COLORS.length)];
+    this.life = 1.0;
+    this.decay = Math.random() * 0.003 + 0.001;
+  }
+  update() {
+    this.x += this.vx; this.y += this.vy; this.life -= this.decay;
+    if (this.life <= 0 || this.y < 0) this.reset();
+  }
+  draw() {
+    ctx.save();
+    ctx.globalAlpha = this.alpha * this.life;
+    ctx.fillStyle = this.color;
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+}
+
+for (let i = 0; i < 80; i++) particles.push(new Particle());
+
+// Draw occasional connection lines
+function drawConnections() {
+  for (let i = 0; i < particles.length; i++) {
+    for (let j = i+1; j < particles.length; j++) {
+      const dx = particles[i].x - particles[j].x;
+      const dy = particles[i].y - particles[j].y;
+      const dist = Math.sqrt(dx*dx + dy*dy);
+      if (dist < 100) {
+        ctx.save();
+        ctx.globalAlpha = (1 - dist/100) * 0.03;
+        ctx.strokeStyle = '#60a5fa';
+        ctx.lineWidth = 0.5;
+        ctx.beginPath();
+        ctx.moveTo(particles[i].x, particles[i].y);
+        ctx.lineTo(particles[j].x, particles[j].y);
+        ctx.stroke();
+        ctx.restore();
+      }
+    }
+  }
+}
+
+function animate() {
+  ctx.clearRect(0, 0, W, H);
+  drawConnections();
+  particles.forEach(p => { p.update(); p.draw(); });
+  requestAnimationFrame(animate);
+}
+animate();
+
+// ── SCROLL REVEAL ──
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.style.opacity = '1';
+      entry.target.style.transform = 'translateY(0)';
+    }
+  });
+}, { threshold: 0.1 });
+
+document.querySelectorAll('.feature-card, .agent-card, .install-step, .flow-step').forEach(el => {
+  el.style.opacity = '0';
+  el.style.transform = 'translateY(20px)';
+  el.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+  observer.observe(el);
+});
+
+// ── SCORE COUNTER ANIMATION ──
+document.querySelectorAll('.stat-num').forEach(el => {
+  const target = parseInt(el.textContent);
+  let current = 0;
+  const step = target / 60;
+  const interval = setInterval(() => {
+    current = Math.min(current + step, target);
+    el.textContent = Math.round(current);
+    if (current >= target) clearInterval(interval);
+  }, 16);
+});
+</script>
+</body>
+</html>
